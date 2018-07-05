@@ -2,51 +2,28 @@
 
 namespace App\Parser;
 
-use GuzzleHttp\Client;
-
-use Generator;
-use GuzzleHttp\ClientInterface;
-
-
-class Parser
+class Parser implements MetaTagParserInterface, TagParserInterface
 {
-    /* @var array */
-    protected $links;
 
-    /** @var ClientInterface */
-    protected $client;
+    protected $content;
 
-    private function getContent(): Generator
+    const PATTERN_META = '/\<meta.*"(?P<prop>.*)".*"(?P<value>.*)"[^>]*>/';
+    const PATTERN_TAG = '/<%s[^>]*>(?P<value>.*)<\/%s>/';
+
+    public function __construct(string $content)
     {
-        foreach ($this->links as $url) {
-            $data = $this->client->get($url);
-            yield $data->getBody();
-        }
+        $this->content = $content;
     }
 
-    public function __construct(array $links, ClientInterface $client)
+    public function getMetaInformation(): array
     {
-        $this->links = $links;
-        $this->client = $client;
+        preg_match_all(self::PATTERN_META, $this->content, $matches);
+        return array_combine($matches['prop'], $matches['value']);
     }
 
-    public function getMetaInformation(): Generator
+    public function getTagContent(string $tag): array
     {
-        $pattern = '/\<meta.*"(?P<prop>.*)".*"(?P<value>.*)"[^>]*>/';
-
-        foreach ($this->getContent() as $index => $value) {
-            preg_match_all($pattern, $value, $matches);
-            yield ([$this->links[$index] => array_combine($matches['prop'], $matches['value'])]);
-        }
-    }
-
-    public function getTagContent($tag): Generator
-    {
-        $pattern = '/<' . $tag . '[^>]*>(?P<value>.*)<\/' . $tag . '>/';
-
-        foreach ($this->getContent() as $index => $value) {
-            preg_match_all($pattern, $value, $matches);
-            yield ([$this->links[$index] => $matches['value']]);
-        }
+        preg_match_all(sprintf(self::PATTERN_TAG, $tag, $tag), $this->content, $matches);
+        return $matches['value'];
     }
 }
