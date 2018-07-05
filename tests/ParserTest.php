@@ -5,6 +5,7 @@ namespace Tests;
 use PHPUnit\Framework\TestCase;
 use App\Parser\Parser;
 use Generator;
+use GuzzleHttp\Client;
 
 class ParserTest extends TestCase
 {
@@ -15,7 +16,7 @@ class ParserTest extends TestCase
             'vp.donetsk.ua',
         ];
 
-        $parser = new Parser($links);
+        $parser = new Parser($links, new Client);
 
         $content = $parser->getMetaInformation();
 
@@ -33,7 +34,7 @@ class ParserTest extends TestCase
             'http://friend-kramatorsk.store/',
         ];
 
-        $parser = new Parser($links);
+        $parser = new Parser($links,  new Client);
 
         $content = $parser->getTagContent('h1');
 

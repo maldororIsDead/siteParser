@@ -5,33 +5,36 @@ namespace App\Parser;
 use GuzzleHttp\Client;
 
 use Generator;
+use GuzzleHttp\ClientInterface;
+
 
 class Parser
 {
     /* @var array */
     protected $links;
 
+    /** @var ClientInterface */
+    protected $client;
+
     private function getContent(): Generator
     {
-        $client = new Client;
         foreach ($this->links as $url) {
-            $data = $client->get($url);
+            $data = $this->client->get($url);
             yield $data->getBody();
         }
     }
 
-    public function __construct(array $links)
+    public function __construct(array $links, ClientInterface $client)
     {
-       $this->links = $links;
+        $this->links = $links;
+        $this->client = $client;
     }
 
     public function getMetaInformation(): Generator
     {
         $pattern = '/\<meta.*"(?P<prop>.*)".*"(?P<value>.*)"[^>]*>/';
 
-        $content = $this->getContent();
-
-        foreach ($content as $index => $value) {
+        foreach ($this->getContent() as $index => $value) {
             preg_match_all($pattern, $value, $matches);
             yield ([$this->links[$index] => array_combine($matches['prop'], $matches['value'])]);
         }
@@ -41,9 +44,7 @@ class Parser
     {
         $pattern = '/<' . $tag . '[^>]*>(?P<value>.*)<\/' . $tag . '>/';
 
-        $content = $this->getContent();
-
-        foreach ($content as $index => $value) {
+        foreach ($this->getContent() as $index => $value) {
             preg_match_all($pattern, $value, $matches);
             yield ([$this->links[$index] => $matches['value']]);
         }

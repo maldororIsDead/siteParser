@@ -3,6 +3,7 @@
 require __DIR__ . '/vendor/autoload.php';
 
 use App\Parser\Parser;
+use GuzzleHttp\Client;
 
 $links = [
     'friend-kramatorsk.store',
@@ -10,7 +11,8 @@ $links = [
     'kramatorsk.info'
 ];
 
-$parser = new Parser($links);
+
+$parser = new Parser($links, new Client);
 
 $content = $parser->getMetaInformation();
 
