@@ -8,24 +8,21 @@ use Generator;
 
 class Parser
 {
-    /* @var Object */
-    protected $client;
-
     /* @var array */
     protected $links;
 
     private function getContent(): Generator
     {
+        $client = new Client;
         foreach ($this->links as $url) {
-            $data = $this->client->get($url);
+            $data = $client->get($url);
             yield $data->getBody();
         }
     }
 
     public function __construct(array $links)
     {
-        $this->client = new Client;
-        $this->links = $links;
+       $this->links = $links;
     }
 
     public function getMetaInformation(): Generator
