@@ -5,5 +5,5 @@ use Generator;
 
 interface DownloaderInterface
 {
-    public function getContents(): Generator;
+    public function download(array $links): Generator;
 }
